@@ -7,7 +7,7 @@ from paython.gateways.core import Gateway
 from paython.exceptions import RequestError, GatewayError, DataValidationError
 
 class XMLGateway(Gateway):
-    def __init__(self, host, translations, debug=False, special_params={}):
+    def __init__(self, host, translations, debug=False, special_params={}, headers={}):
         """ initalize API call session
 
         host: hostname (apigateway.tld)
@@ -19,7 +19,19 @@ class XMLGateway(Gateway):
         self.debug = debug
         self.parse_xml = parse_xml
         self.special_ssl = special_params
+        self.headers = headers
         super(XMLGateway, self).__init__(set_method=self.set, translations=translations, debug=debug)
+
+    @property
+    def envelope(self):
+        """
+        This method should return the document or element which set() will use to add new elements into.
+        Could be used to envelope XML (as in SOAP requests)
+        """
+        if hasattr(self, '_envelope'):
+            return self._envelope
+        self._envelope = self.doc
+        return self._envelope
 
     def set(self, path, child=False, attribute=False):
         """ Accepts a forward slash seperated path of XML elements to traverse and create if non existent.
@@ -36,20 +48,20 @@ class XMLGateway(Gateway):
         except AttributeError:
             return # because if it's None, then don't worry
 
-        xml_doc = self.doc
+        envelope = self.envelope
 
         # traverse full XML element path string `path`
         for element_name in xml_path:
             # get existing XML element by `element_name`
-            element = self.doc.getElementsByTagName(element_name)
+            element = envelope.getElementsByTagName(element_name)
             if element: element = element[0]
 
             # create element if non existing or target element
             if not element or element_name == xml_path[-1:][0]:
                 element = self.doc.createElement(element_name)
-                xml_doc.appendChild(element)
+                envelope.appendChild(element)
 
-            xml_doc = element
+            envelope = element
 
         if child:
             # create child elements from an tuple with optional text node or attributes
@@ -63,11 +75,11 @@ class XMLGateway(Gateway):
                     if len(obj) == 3:
                         a = obj[2].split(':')
                         child.setAttribute(a[0], a[1])
-                    xml_doc.appendChild(child)
+                    envelope.appendChild(child)
             # create a single text child node
             else:
                 element = self.doc.createTextNode(str(child))
-                xml_doc.appendChild(element)
+                envelope.appendChild(element)
 
         # target element attributes
         if attribute:
@@ -81,7 +93,7 @@ class XMLGateway(Gateway):
             # adding attributes for each item
             for attribute in attributes:
                 attribute = attribute.split(':')
-                xml_doc.setAttribute(attribute[0], attribute[1])
+                envelope.setAttribute(attribute[0], attribute[1])
 
     def request_xml(self):
         """
@@ -90,25 +102,24 @@ class XMLGateway(Gateway):
         return self.doc.toprettyxml()
 
     def make_request(self, api_uri):
-        """ 
+        """
         Submits the API request as XML formated string via HTTP POST and parse gateway response.
         This needs to be run after adding some data via 'set'
         """
         request_body = self.doc.toxml('utf-8')
 
-        # checking to see if we have any special params
-        if self.special_ssl:
-            kwargs = self.special_ssl
-            api = httplib.HTTPSConnection(self.api_host, **kwargs)
-        else:
-            api = httplib.HTTPSConnection(self.api_host)
+        api = httplib.HTTPSConnection(self.api_host, **self.special_ssl)
 
         api.connect()
-        api.putrequest('POST', api_uri, skip_host=True)
-        api.putheader('Host', self.api_host)
-        api.putheader('Content-type', 'text/xml; charset="utf-8"')
-        api.putheader("Content-length", str(len(request_body)))
-        api.putheader('User-Agent', 'yourdomain.net')
+        headers = {
+            'Host': self.api_host,
+            'Content-type': 'text/xml; charset="utf-8"',
+            'Content-length': str(len(request_body)),
+            'User-Agent': 'yourdomain.net',
+        }
+        headers.update(self.headers)
+        for header, value in headers.items():
+            api.putheader(header, value)
         api.endheaders()
         api.send(request_body)
 
@@ -130,7 +141,7 @@ class XMLGateway(Gateway):
 
         return resp_dict
 
-class SOAPGateway(object):
+class SOAPGateway(XMLGateway):
     pass
 
 class GetGateway(Gateway):
