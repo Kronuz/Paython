@@ -122,7 +122,7 @@ class AuthorizeNet(GetGateway):
     debug = False
     test = False
 
-    def __init__(self, username='test', password='testpassword', debug=False, test=False, delim=None):
+    def __init__(self, username='test', password='testpassword', debug=False, test=False, delim=None, duplicate_window=None):
         """
         setting up object so we can run 4 different ways (live, debug, test & debug+test)
         There are two different test modes:
@@ -139,6 +139,8 @@ class AuthorizeNet(GetGateway):
         """
         super(AuthorizeNet, self).set('x_login', username)
         super(AuthorizeNet, self).set('x_tran_key', password)
+        if duplicate_window is None:
+            super(AuthorizeNet, self).set('x_duplicate_window', duplicate_window)
 
         # passing fields to bubble up to Base Class
         super(AuthorizeNet, self).__init__(translations=self.REQUEST_FIELDS, debug=debug)
