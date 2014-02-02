@@ -61,6 +61,10 @@ class CreditCard(object):
         """
         validates expiration date & card number using util functions
         """
+        cc_type = get_card_type(self.number)
+        if not cc_type:
+            raise DataValidationError('The credit card number provided is not a valid card type')
+
         if not is_valid_cc(self.number):
             raise DataValidationError('The credit card number provided does not pass luhn validation')
 
@@ -68,7 +72,7 @@ class CreditCard(object):
             raise DataValidationError('The credit card expiration provided is not in the future')
 
         if self.strict:
-            if not is_valid_cvv(self.verification_value):
+            if not is_valid_cvv(self.verification_value, cc_type):
                 raise DataValidationError('The credit card cvv is not valid')
 
         return True

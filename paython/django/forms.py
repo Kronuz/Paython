@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.localflavor.us.forms import USStateField, USZipCodeField, USStateSelect
 
-from paython.lib.utils import is_valid_cc, is_valid_cvv, is_valid_exp
+from paython.lib.utils import get_card_type, is_valid_cc, is_valid_cvv, is_valid_exp
 
 class CustomerInformation(forms.Form):
     """
@@ -33,10 +33,11 @@ class CreditCardForm(forms.Form):
         if not self.is_valid():
             raise forms.ValidationError("There was a problem processing your payment")
 
-        if not is_valid_cc(number):
+        cc_type = get_card_type(number)
+        if not cc_type or not is_valid_cc(number):
             raise forms.ValidationError("Invalid credit card number")
 
-        if not is_valid_cvv(security_code):
+        if not is_valid_cvv(security_code, cc_type):
             raise forms.ValidationError("Invalid security code")
 
         if not is_valid_exp(exp_month, exp_year):
