@@ -3,7 +3,7 @@ from __future__ import absolute_import, unicode_literals
 import time
 import logging
 
-from ..gateways.core import Gateway
+from ..lib.api import Gateway
 from ..exceptions import GatewayError, DataValidationError
 
 
@@ -60,7 +60,7 @@ class Samurai(Gateway):
     def set(self, key, value):
         """
         Does not serve a purpose other than to let us inherit
-        from core.Gateway with no problems
+        from api.Gateway with no problems
         """
         pass
 

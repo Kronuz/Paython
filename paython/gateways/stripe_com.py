@@ -42,6 +42,13 @@ class Stripe(Gateway):
         debug_string = " %s.%s.__init__() -- You're in debug mode" % (__name__, 'Stripe')
         logger.debug(debug_string.center(80, '='))
 
+    def set(self, key, value):
+        """
+        Does not serve a purpose other than to let us inherit
+        from api.Gateway with no problems
+        """
+        pass
+
     def auth(self, amount, credit_card=None, billing_info=None, shipping_info=None):
         """
         Not implemented because stripe does not support authorizations:
