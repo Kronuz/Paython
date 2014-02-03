@@ -1,7 +1,12 @@
-import time
+from __future__ import absolute_import, unicode_literals
 
-from paython.exceptions import MissingDataError
-from paython.lib.api import GetGateway
+import time
+import logging
+
+from ..exceptions import MissingDataError
+from ..lib.api import GetGateway
+
+logger = logging.getLogger(__name__)
 
 
 class PaypalWPP(GetGateway):
@@ -75,10 +80,10 @@ class PaypalWPP(GetGateway):
 
     # Map cc.py card types to paypal card types
     CARD_TYPES = {
-        'visa': 'Visa',
-        'amex': 'Amex',
-        'mc': 'MasterCard',
-        'discover': 'Discover',
+        'visa': "Visa",
+        'amex': "Amex",
+        'mc': "MasterCard",
+        'discover': "Discover",
     }
 
     debug = False
@@ -96,14 +101,11 @@ class PaypalWPP(GetGateway):
         # passing fields to bubble up to Base Class
         super(PaypalWPP, self).__init__(translations=self.REQUEST_FIELDS, debug=debug)
 
-        if debug:
-            self.debug = True
-
         if test:
             self.test = True
             if self.debug:
-                debug_string = " paython.gateways.paypal_wpp.__init__() -- You're in test mode (& debug, obviously) "
-                print debug_string.center(80, '=')
+                debug_string = " %s.%s.__init__() -- You're in test mode (& debug, obviously) " % (__name__, 'PaypalWPP')
+                logger.debug(debug_string.center(80, '='))
 
         if delim:
             self.DELIMITER = delim
@@ -116,8 +118,8 @@ class PaypalWPP(GetGateway):
         #self.set('x_delim_char', self.DELIMITER)
         #self.set('x_version', self.VERSION)
         if self.debug:
-            debug_string = " paython.gateways.paypal_wpp.charge_setup() Just set up for a charge "
-            print debug_string.center(80, '=')
+            debug_string = " %s.%s.charge_setup() Just set up for a charge " % (__name__, 'PaypalWPP')
+            logger.debug(debug_string.center(80, '='))
 
     def use_credit_card(self, credit_card):
         """
@@ -153,9 +155,9 @@ class PaypalWPP(GetGateway):
         # validating or building up request
         if not credit_card:
             if self.debug:
-                debug_string = "paython.gateways.paypal_wpp.auth()  -- No CreditCard object present. You passed in %s " % (credit_card)
-                print debug_string
-            raise MissingDataError('You did not pass a CreditCard object into the auth method')
+                debug_string = "%s.%s.auth()  -- No CreditCard object present. You passed in %s" % (__name__, 'PaypalWPP', credit_card)
+                logger.debug(debug_string)
+            raise MissingDataError("You did not pass a CreditCard object into the auth method")
         else:
             self.use_credit_card(credit_card)
 
@@ -205,9 +207,9 @@ class PaypalWPP(GetGateway):
         # validating or building up request
         if not credit_card:
             if self.debug:
-                debug_string = "paython.gateways.paypal_wpp.capture()  -- No CreditCard object present. You passed in %s " % (credit_card)
-                print debug_string
-            raise MissingDataError('You did not pass a CreditCard object into the capture method')
+                debug_string = "%s.%s.capture()  -- No CreditCard object present. You passed in %s" % (__name__, 'PaypalWPP', credit_card)
+                logger.debug(debug_string)
+            raise MissingDataError("You did not pass a CreditCard object into the capture method")
         else:
             self.use_credit_card(credit_card)
 
@@ -274,10 +276,10 @@ class PaypalWPP(GetGateway):
             url = self.API_URI['live']
 
         if self.debug:  # I wish I could hide debugging
-            debug_string = " paython.gateways.paypal_wpp.request() -- Attempting request to: "
-            print debug_string.center(80, '=')
+            debug_string = " %s.%s.request() -- Attempting request to: " % (__name__, 'PaypalWPP')
+            logger.debug(debug_string.center(80, '='))
             debug_string = "\n %s with params: %s" % (url, self.query_string())
-            print debug_string
+            logger.debug(debug_string)
 
         # make the request
         start = time.time()  # timing it
@@ -286,8 +288,8 @@ class PaypalWPP(GetGateway):
         response_time = '%0.2f' % (end - start)
 
         if self.debug:  # debugging makes code look so nasty
-            debug_string = " paython.gateways.paypal_wpp.request()  -- Request completed in %ss " % response_time
-            print debug_string.center(80, '=')
+            debug_string = " %s.%s.request()  -- Request completed in %ss " % (__name__, 'PaypalWPP', response_time)
+            logger.debug(debug_string.center(80, '='))
 
         return response, response_time
 
@@ -297,10 +299,10 @@ class PaypalWPP(GetGateway):
         """
         import urllib
         if self.debug:  # debugging is so gross
-            debug_string = " paython.gateways.paypal_wpp.parse() -- Raw response: "
-            print debug_string.center(80, '=')
+            debug_string = " %s.%s.parse() -- Raw response: " % (__name__, 'PaypalWPP')
+            logger.debug(debug_string.center(80, '='))
             debug_string = "\n %s" % response
-            print debug_string
+            logger.debug(debug_string)
 
         #splitting up response into a list so we can map it to Paython generic response
         response_tokens = {}
@@ -311,9 +313,9 @@ class PaypalWPP(GetGateway):
         approved = response_tokens['ack'] == 'Success'
 
         if self.debug:  # :& gonna puke
-            debug_string = " paython.gateways.paypal_wpp.parse() -- Response as list: "
-            print debug_string.center(80, '=')
+            debug_string = " %s.%s.parse() -- Response as list: " % (__name__, 'PaypalWPP')
+            logger.debug(debug_string.center(80, '='))
             debug_string = '\n%s' % response
-            print debug_string
+            logger.debug(debug_string)
 
         return self.standardize(response, self.RESPONSE_KEYS, response_time, approved)

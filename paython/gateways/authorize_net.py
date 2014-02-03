@@ -1,8 +1,10 @@
+from __future__ import absolute_import, unicode_literals
+
 import time
 import logging
 
-from paython.exceptions import MissingDataError
-from paython.lib.api import GetGateway
+from ..exceptions import MissingDataError
+from ..lib.api import GetGateway
 
 logger = logging.getLogger(__name__)
 
@@ -138,16 +140,13 @@ class AuthorizeNet(GetGateway):
         For further details please see:
         http://developer.authorize.net/guides/AIM/wwhelp/wwhimpl/common/html/wwhelp.htm#context=AIM&file=5_TestTrans.html
         """
-        super(AuthorizeNet, self).set('x_login', username)
-        super(AuthorizeNet, self).set('x_tran_key', password)
+        self.set('x_login', username)
+        self.set('x_tran_key', password)
         if duplicate_window is None:
-            super(AuthorizeNet, self).set('x_duplicate_window', duplicate_window)
+            self.set('x_duplicate_window', duplicate_window)
 
         # passing fields to bubble up to Base Class
         super(AuthorizeNet, self).__init__(translations=self.REQUEST_FIELDS, debug=debug)
-
-        if debug:
-            self.debug = True
 
         if test:
             if test != self.LIVE_TEST:
@@ -155,11 +154,9 @@ class AuthorizeNet(GetGateway):
                 test_string = 'regular'
             else:
                 test_string = 'live'
-                super(AuthorizeNet, self).set('x_test_request', 'TRUE')
-            debug_string = " paython.gateways.authorize_net.__init__() -- You're in %s test mode (& debug, obviously) " % test_string
+                self.set('x_test_request', 'TRUE')
+            debug_string = " %s.%s.__init__() -- You're in %s test mode (& debug, obviously) " % (__name__, 'AuthorizeNet', test_string)
             logger.debug(debug_string.center(80, '='))
-        else:
-            self.test = False
 
         if delim:
             self.DELIMITER = delim
@@ -168,10 +165,10 @@ class AuthorizeNet(GetGateway):
         """
         standard setup, used for charges
         """
-        super(AuthorizeNet, self).set('x_delim_data', 'TRUE')
-        super(AuthorizeNet, self).set('x_delim_char', self.DELIMITER)
-        super(AuthorizeNet, self).set('x_version', self.VERSION)
-        debug_string = " paython.gateways.authorize_net.charge_setup() Just set up for a charge "
+        self.set('x_delim_data', 'TRUE')
+        self.set('x_delim_char', self.DELIMITER)
+        self.set('x_version', self.VERSION)
+        debug_string = " %s.%s.charge_setup() Just set up for a charge " % (__name__, 'AuthorizeNet')
         logger.debug(debug_string.center(80, '='))
 
     def auth(self, amount, credit_card=None, billing_info=None, shipping_info=None, is_partial=False, split_id=None, invoice_num=None):
@@ -182,30 +179,30 @@ class AuthorizeNet(GetGateway):
         self.charge_setup()  # considering turning this into a decorator?
 
         #setting transaction data
-        super(AuthorizeNet, self).set(self.REQUEST_FIELDS['amount'], amount)
-        super(AuthorizeNet, self).set(self.REQUEST_FIELDS['trans_type'], 'AUTH_ONLY')
+        self.set(self.REQUEST_FIELDS['amount'], amount)
+        self.set(self.REQUEST_FIELDS['trans_type'], 'AUTH_ONLY')
         if invoice_num is not None:
-            super(AuthorizeNet, self).set(self.REQUEST_FIELDS['invoice_num'], invoice_num)
+            self.set(self.REQUEST_FIELDS['invoice_num'], invoice_num)
 
         # support for partial auths
         if is_partial:
-            super(AuthorizeNet, self).set(self.REQUEST_FIELDS['is_partial'], 'true')
-            super(AuthorizeNet, self).set(self.REQUEST_FIELDS['split_tender_id'], split_id)
+            self.set(self.REQUEST_FIELDS['is_partial'], 'true')
+            self.set(self.REQUEST_FIELDS['split_tender_id'], split_id)
 
         # validating or building up request
         if not credit_card:
-            debug_string = "paython.gateways.authorize_net.auth()  -- No CreditCard object present. You passed in %s " % (credit_card)
+            debug_string = "%s.%s.auth()  -- No CreditCard object present. You passed in %s" % (__name__, 'AuthorizeNet', credit_card)
             logger.debug(debug_string)
 
-            raise MissingDataError('You did not pass a CreditCard object into the auth method')
+            raise MissingDataError("You did not pass a CreditCard object into the auth method")
         else:
-            super(AuthorizeNet, self).use_credit_card(credit_card)
+            self.use_credit_card(credit_card)
 
         if billing_info:
-            super(AuthorizeNet, self).set_billing_info(**billing_info)
+            self.set_billing_info(**billing_info)
 
         if shipping_info:
-            super(AuthorizeNet, self).set_shipping_info(**shipping_info)
+            self.set_shipping_info(**shipping_info)
 
         # send transaction to gateway!
         response, response_time = self.request()
@@ -219,13 +216,13 @@ class AuthorizeNet(GetGateway):
         self.charge_setup()  # considering turning this into a decorator?
 
         #setting transaction data
-        super(AuthorizeNet, self).set(self.REQUEST_FIELDS['trans_type'], 'PRIOR_AUTH_CAPTURE')
-        super(AuthorizeNet, self).set(self.REQUEST_FIELDS['amount'], amount)
-        super(AuthorizeNet, self).set(self.REQUEST_FIELDS['trans_id'], trans_id)
+        self.set(self.REQUEST_FIELDS['trans_type'], 'PRIOR_AUTH_CAPTURE')
+        self.set(self.REQUEST_FIELDS['amount'], amount)
+        self.set(self.REQUEST_FIELDS['trans_id'], trans_id)
 
         if split_id:  # settles the entire split
-            super(AuthorizeNet, self).set(self.REQUEST_FIELDS['split_tender_id'], split_id)
-            super(AuthorizeNet, self).unset(self.REQUEST_FIELDS['trans_id'])
+            self.set(self.REQUEST_FIELDS['split_tender_id'], split_id)
+            self.unset(self.REQUEST_FIELDS['trans_id'])
 
         # send transaction to gateway!
         response, response_time = self.request()
@@ -239,23 +236,23 @@ class AuthorizeNet(GetGateway):
         self.charge_setup()  # considering turning this into a decorator?
 
         #setting transaction data
-        super(AuthorizeNet, self).set(self.REQUEST_FIELDS['amount'], amount)
-        super(AuthorizeNet, self).set(self.REQUEST_FIELDS['trans_type'], 'AUTH_CAPTURE')
+        self.set(self.REQUEST_FIELDS['amount'], amount)
+        self.set(self.REQUEST_FIELDS['trans_type'], 'AUTH_CAPTURE')
 
         # validating or building up request
         if not credit_card:
-            debug_string = "paython.gateways.authorize_net.capture()  -- No CreditCard object present. You passed in %s " % (credit_card)
+            debug_string = "%s.%s.capture()  -- No CreditCard object present. You passed in %s" % (__name__, 'AuthorizeNet', credit_card)
             logger.debug(debug_string)
 
-            raise MissingDataError('You did not pass a CreditCard object into the auth method')
+            raise MissingDataError("You did not pass a CreditCard object into the auth method")
         else:
-            super(AuthorizeNet, self).use_credit_card(credit_card)
+            self.use_credit_card(credit_card)
 
         if billing_info:
-            super(AuthorizeNet, self).set_billing_info(**billing_info)
+            self.set_billing_info(**billing_info)
 
         if shipping_info:
-            super(AuthorizeNet, self).set_shipping_info(**shipping_info)
+            self.set_shipping_info(**shipping_info)
 
         # send transaction to gateway!
         response, response_time = self.request()
@@ -269,12 +266,12 @@ class AuthorizeNet(GetGateway):
         self.charge_setup()  # considering turning this into a decorator?
 
         #setting transaction data
-        super(AuthorizeNet, self).set(self.REQUEST_FIELDS['trans_type'], 'VOID')
-        super(AuthorizeNet, self).set(self.REQUEST_FIELDS['trans_id'], trans_id)
+        self.set(self.REQUEST_FIELDS['trans_type'], 'VOID')
+        self.set(self.REQUEST_FIELDS['trans_id'], trans_id)
 
         if split_id:  # voids an entire split (alternatively, a trans_id just kills that particular txn)
-            super(AuthorizeNet, self).set(self.REQUEST_FIELDS['split_tender_id'], split_id)
-            super(AuthorizeNet, self).unset(self.REQUEST_FIELDS['trans_id'])
+            self.set(self.REQUEST_FIELDS['split_tender_id'], split_id)
+            self.unset(self.REQUEST_FIELDS['trans_id'])
 
         # send transaction to gateway!
         response, response_time = self.request()
@@ -288,16 +285,16 @@ class AuthorizeNet(GetGateway):
         self.charge_setup()  # considering turning this into a decorator?
 
         #setting transaction data
-        super(AuthorizeNet, self).set(self.REQUEST_FIELDS['trans_type'], 'CREDIT')
-        super(AuthorizeNet, self).set(self.REQUEST_FIELDS['trans_id'], trans_id)
-        super(AuthorizeNet, self).set(self.REQUEST_FIELDS['number'], credit_card.number)
+        self.set(self.REQUEST_FIELDS['trans_type'], 'CREDIT')
+        self.set(self.REQUEST_FIELDS['trans_id'], trans_id)
+        self.set(self.REQUEST_FIELDS['number'], credit_card.number)
 
         if amount:  # check to see if we should send an amount
-            super(AuthorizeNet, self).set(self.REQUEST_FIELDS['amount'], amount)
+            self.set(self.REQUEST_FIELDS['amount'], amount)
 
         if split_id:  # voids an entire split (alternatively, a trans_id just kills that particular txn)
-            super(AuthorizeNet, self).set(self.REQUEST_FIELDS['split_tender_id'], split_id)
-            super(AuthorizeNet, self).unset(self.REQUEST_FIELDS['trans_id'])
+            self.set(self.REQUEST_FIELDS['split_tender_id'], split_id)
+            self.unset(self.REQUEST_FIELDS['trans_id'])
 
         # send transaction to gateway!
         response, response_time = self.request()
@@ -313,19 +310,19 @@ class AuthorizeNet(GetGateway):
         else:
             url = self.API_URI['test']  # here just in case we want to granularly change endpoint
 
-        debug_string = " paython.gateways.authorize_net.request() -- Attempting request to: "
+        debug_string = " %s.%s.request() -- Attempting request to: " % (__name__, 'AuthorizeNet')
         logger.debug(debug_string.center(80, '='))
-        debug_string = "%s with params: %s" % (url, super(AuthorizeNet, self).query_string())
+        debug_string = "%s with params: %s" % (url, self.query_string())
         logger.debug(debug_string)
         logger.debug('as dict: %s' % self.REQUEST_DICT)
 
         # make the request
         start = time.time()  # timing it
-        response = super(AuthorizeNet, self).make_request(url)
+        response = self.make_request(url)
         end = time.time()  # done timing it
         response_time = '%0.2f' % (end - start)
 
-        debug_string = " paython.gateways.authorize_net.request()  -- Request completed in %ss " % response_time
+        debug_string = " %s.%s.request()  -- Request completed in %ss " % (__name__, 'AuthorizeNet', response_time)
         logger.debug(debug_string.center(80, '='))
 
         return response, response_time
@@ -334,7 +331,7 @@ class AuthorizeNet(GetGateway):
         """
         On Specific Gateway due differences in response from gateway
         """
-        debug_string = " paython.gateways.authorize_net.parse() -- Raw response: "
+        debug_string = " %s.%s.parse() -- Raw response: " % (__name__, 'AuthorizeNet')
         logger.debug(debug_string.center(80, '='))
         logger.debug("\n %s" % response)
 
@@ -342,8 +339,8 @@ class AuthorizeNet(GetGateway):
         response = response.split(self.DELIMITER)
         approved = True if response[0] == '1' else False
 
-        debug_string = " paython.gateways.authorize_net.parse() -- Response as list: "
+        debug_string = " %s.%s.parse() -- Response as list: " % (__name__, 'AuthorizeNet')
         logger.debug(debug_string.center(80, '='))
         logger.debug('\n%s' % response)
 
-        return super(AuthorizeNet, self).standardize(response, self.RESPONSE_KEYS, response_time, approved)
+        return self.standardize(response, self.RESPONSE_KEYS, response_time, approved)

@@ -1,10 +1,12 @@
+from __future__ import absolute_import, unicode_literals
+
 import re
 import time
 import urlparse
 import logging
 
-from paython.exceptions import DataValidationError, MissingDataError
-from paython.lib.api import XMLGateway
+from ..exceptions import DataValidationError, MissingDataError
+from ..lib.api import XMLGateway
 
 logger = logging.getLogger(__name__)
 
@@ -98,14 +100,11 @@ class FirstDataLegacy(XMLGateway):
         super(FirstDataLegacy, self).__init__(url, translations=self.REQUEST_FIELDS, debug=debug, special_params=ssl_config)
 
         #setting some creds
-        super(FirstDataLegacy, self).set('order/merchantinfo/configfile', username)
-
-        if debug:
-            self.debug = True
+        self.set('order/merchantinfo/configfile', username)
 
         if test:
             self.test = True
-            debug_string = " paython.gateways.firstdata_legacy.__init__() -- You're in test mode (& debug, obviously) "
+            debug_string = " %s.%s.__init__() -- You're in test mode (& debug, obviously) " % (__name__, 'FirstDataLegacy')
             logger.debug(debug_string.center(80, '='))
 
     def charge_setup(self):
@@ -113,14 +112,14 @@ class FirstDataLegacy(XMLGateway):
         standard setup, used for charges
         """
         if self.cvv_present:
-            super(FirstDataLegacy, self).set('order/creditcard/cvmindicator', 'provided')
+            self.set('order/creditcard/cvmindicator', 'provided')
 
         if self.test:  # will almost always return nice
-            super(FirstDataLegacy, self).set('order/orderoptions/result', 'Good')
+            self.set('order/orderoptions/result', 'Good')
         else:
-            super(FirstDataLegacy, self).set('order/orderoptions/result', 'Live')
+            self.set('order/orderoptions/result', 'Live')
 
-        debug_string = " paython.gateways.firstdata_legacy.charge_setup() Just set up for a charge "
+        debug_string = " %s.%s.charge_setup() Just set up for a charge " % (__name__, 'FirstDataLegacy')
         logger.debug(debug_string.center(80, '='))
 
     def auth(self, amount, credit_card=None, billing_info=None, shipping_info=None):
@@ -133,34 +132,34 @@ class FirstDataLegacy(XMLGateway):
         self.charge_setup()  # considering turning this into a decorator?
 
         #setting transaction data
-        super(FirstDataLegacy, self).set(self.REQUEST_FIELDS['amount'], amount)
-        super(FirstDataLegacy, self).set(self.REQUEST_FIELDS['trans_type'], 'Preauth')
+        self.set(self.REQUEST_FIELDS['amount'], amount)
+        self.set(self.REQUEST_FIELDS['trans_type'], 'Preauth')
         #special treatment to make peoples lives easier (extracting addrnum from address)
         try:
             matches = re.match('\d+', billing_info['address'])
         except KeyError:
-            raise DataValidationError('Unable to find a billing address to extract a number from for gateway')
+            raise DataValidationError("Unable to find a billing address to extract a number from for gateway")
 
         if matches:
-            super(FirstDataLegacy, self).set('order/billing/addrnum', matches.group())  # hardcoded because of uniqueness to gateway
+            self.set('order/billing/addrnum', matches.group())  # hardcoded because of uniqueness to gateway
         else:
-            raise DataValidationError('Unable to find a number at the start of provided billing address')
+            raise DataValidationError("Unable to find a number at the start of provided billing address")
 
         # validating or building up request
         if not credit_card:
-            debug_string = "paython.gateways.firstdata_legacy.auth()  -- No CreditCard object present. You passed in %s " % (credit_card)
+            debug_string = "%s.%s.auth()  -- No CreditCard object present. You passed in %s" % (__name__, 'FirstDataLegacy', credit_card)
             logger.debug(debug_string)
 
-            raise MissingDataError('You did not pass a CreditCard object into the auth method')
+            raise MissingDataError("You did not pass a CreditCard object into the auth method")
         else:
             credit_card._exp_yr_style = True
-            super(FirstDataLegacy, self).use_credit_card(credit_card)
+            self.use_credit_card(credit_card)
 
         if billing_info:
-            super(FirstDataLegacy, self).set_billing_info(**billing_info)
+            self.set_billing_info(**billing_info)
 
         if shipping_info:
-            super(FirstDataLegacy, self).set_shipping_info(**shipping_info)
+            self.set_shipping_info(**shipping_info)
 
         # send transaction to gateway!
         response, response_time = self.request()
@@ -174,9 +173,9 @@ class FirstDataLegacy(XMLGateway):
         self.charge_setup()  # considering turning this into a decorator?
 
         #setting transaction data
-        super(FirstDataLegacy, self).set(self.REQUEST_FIELDS['trans_type'], 'Postauth')
-        super(FirstDataLegacy, self).set(self.REQUEST_FIELDS['amount'], amount)
-        super(FirstDataLegacy, self).set(self.REQUEST_FIELDS['trans_id'], trans_id)
+        self.set(self.REQUEST_FIELDS['trans_type'], 'Postauth')
+        self.set(self.REQUEST_FIELDS['amount'], amount)
+        self.set(self.REQUEST_FIELDS['trans_id'], trans_id)
 
         # send transaction to gateway!
         response, response_time = self.request()
@@ -190,30 +189,30 @@ class FirstDataLegacy(XMLGateway):
         self.charge_setup()  # considering turning this into a decorator?
 
         #setting transaction data
-        super(FirstDataLegacy, self).set(self.REQUEST_FIELDS['amount'], amount)
-        super(FirstDataLegacy, self).set(self.REQUEST_FIELDS['trans_type'], 'Sale')
+        self.set(self.REQUEST_FIELDS['amount'], amount)
+        self.set(self.REQUEST_FIELDS['trans_type'], 'Sale')
 
         #special treatment to make peoples lives easier (extracting addrnum from address)
         matches = re.match('\d+', billing_info['address'])
         if matches:
-            super(FirstDataLegacy, self).set('order/billing/addrnum', matches.group())  # hardcoded because of uniqueness to gateway
+            self.set('order/billing/addrnum', matches.group())  # hardcoded because of uniqueness to gateway
         else:
-            raise DataValidationError('Unable to find a number at the start of provided billing address')
+            raise DataValidationError("Unable to find a number at the start of provided billing address")
 
         # validating or building up request
         if not credit_card:
-            logger.debug("paython.gateways.firstdata_legacy.capture()  -- No CreditCard object present. You passed in %s " % (credit_card))
+            logger.debug("%s.%s.capture()  -- No CreditCard object present. You passed in %s" % (__name__, 'FirstDataLegacy', credit_card, credit_card))
 
-            raise MissingDataError('You did not pass a CreditCard object into the auth method')
+            raise MissingDataError("You did not pass a CreditCard object into the auth method")
         else:
             credit_card._exp_yr_style = True
-            super(FirstDataLegacy, self).use_credit_card(credit_card)
+            self.use_credit_card(credit_card)
 
         if billing_info:
-            super(FirstDataLegacy, self).set_billing_info(**billing_info)
+            self.set_billing_info(**billing_info)
 
         if shipping_info:
-            super(FirstDataLegacy, self).set_shipping_info(**shipping_info)
+            self.set_shipping_info(**shipping_info)
 
         # send transaction to gateway!
         response, response_time = self.request()
@@ -228,8 +227,8 @@ class FirstDataLegacy(XMLGateway):
         self.charge_setup()  # considering turning this into a decorator?
 
         #setting transaction data
-        super(FirstDataLegacy, self).set(self.REQUEST_FIELDS['trans_type'], 'Void')
-        super(FirstDataLegacy, self).set(self.REQUEST_FIELDS['trans_id'], trans_id)
+        self.set(self.REQUEST_FIELDS['trans_type'], 'Void')
+        self.set(self.REQUEST_FIELDS['trans_id'], trans_id)
 
         # send transaction to gateway!
         response, response_time = self.request()
@@ -243,12 +242,12 @@ class FirstDataLegacy(XMLGateway):
         self.charge_setup()  # considering turning this into a decorator?
 
         #setting transaction data
-        super(FirstDataLegacy, self).set(self.REQUEST_FIELDS['trans_type'], 'Credit')
-        super(FirstDataLegacy, self).set(self.REQUEST_FIELDS['trans_id'], trans_id)
-        super(FirstDataLegacy, self).set(self.REQUEST_FIELDS['number'], credit_card.number)
+        self.set(self.REQUEST_FIELDS['trans_type'], 'Credit')
+        self.set(self.REQUEST_FIELDS['trans_id'], trans_id)
+        self.set(self.REQUEST_FIELDS['number'], credit_card.number)
 
         if amount:  # check to see if we should send an amount
-            super(FirstDataLegacy, self).set(self.REQUEST_FIELDS['amount'], amount)
+            self.set(self.REQUEST_FIELDS['amount'], amount)
 
         # send transaction to gateway!
         response, response_time = self.request()
@@ -261,19 +260,19 @@ class FirstDataLegacy(XMLGateway):
         #getting the uri to POST xml to
         uri = urlparse.urlparse(self.API_URI['live']).path
 
-        debug_string = " paython.gateways.firstdata_legacy.request() -- Attempting request to: "
+        debug_string = " %s.%s.request() -- Attempting request to: " % (__name__, 'FirstDataLegacy')
         logger.debug(debug_string.center(80, '='))
         logger.debug("\n %s with params: %s" %
                      (self.API_URI['live'],
-                      super(FirstDataLegacy, self).request_xml()))
+                      self.request_xml()))
 
         # make the request
         start = time.time()  # timing it
-        response = super(FirstDataLegacy, self).make_request(uri)
+        response = self.make_request(uri)
         end = time.time()  # done timing it
         response_time = '%0.2f' % (end - start)
 
-        debug_string = " paython.gateways.firstdata_legacy.request()  -- Request completed in %ss " % response_time
+        debug_string = " %s.%s.request()  -- Request completed in %ss " % (__name__, 'FirstDataLegacy', response_time)
         logger.debug(debug_string.center(80, '='))
 
         return response, response_time
@@ -282,15 +281,15 @@ class FirstDataLegacy(XMLGateway):
         """
         On Specific Gateway due differences in response from gateway
         """
-        debug_string = " paython.gateways.firstdata_legacy.parse() -- Raw response: "
+        debug_string = " %s.%s.parse() -- Raw response: " % (__name__, 'FirstDataLegacy')
         logger.debug(debug_string.center(80, '='))
         logger.debug("\n %s" % response)
 
         response = response['response']
         approved = True if response['r_approved'] == 'APPROVED' else False
 
-        debug_string = " paython.gateways.firstdata_legacy.parse() -- Response as dict: "
+        debug_string = " %s.%s.parse() -- Response as dict: " % (__name__, 'FirstDataLegacy')
         logger.debug(debug_string.center(80, '='))
         logger.debug('\n%s' % response)
 
-        return super(FirstDataLegacy, self).standardize(response, self.RESPONSE_KEYS, response_time, approved)
+        return self.standardize(response, self.RESPONSE_KEYS, response_time, approved)

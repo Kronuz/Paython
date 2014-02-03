@@ -1,6 +1,7 @@
-from paython.exceptions import DataValidationError
+from __future__ import absolute_import, unicode_literals
 
-from paython.lib.utils import get_card_type, get_card_exp, is_valid_exp, is_valid_cc, is_valid_cvv
+from ..exceptions import DataValidationError
+from ..lib.utils import get_card_type, get_card_exp, is_valid_exp, is_valid_cc, is_valid_cvv
 
 
 class CreditCard(object):
@@ -34,9 +35,9 @@ class CreditCard(object):
         string repr for debugging
         """
         if hasattr(self, '_exp_yr_style') and self._exp_yr_style:
-            return u'<CreditCard -- {0.full_name}, {0.card_type}, {0.safe_num}, expires: {0.exp_date} --extra: {_exp_yr_style}>'.format(self, _exp_yr_style=self.exp_year[2:])
+            return '<CreditCard -- {0.full_name}, {0.card_type}, {0.safe_num}, expires: {0.exp_date} --extra: {_exp_yr_style}>'.format(self, _exp_yr_style=self.exp_year[2:])
         else:
-            return u'<CreditCard -- {0.full_name}, {0.card_type}, {0.safe_num}, expires: {0.exp_date}>'.format(self)
+            return '<CreditCard -- {0.full_name}, {0.card_type}, {0.safe_num}, expires: {0.exp_date}>'.format(self)
 
     @property
     def safe_num(self):
@@ -64,16 +65,16 @@ class CreditCard(object):
         """
         cc_type = get_card_type(self.number)
         if not cc_type:
-            raise DataValidationError('The credit card number provided is not a valid card type')
+            raise DataValidationError("The credit card number provided is not a valid card type")
 
         if not is_valid_cc(self.number):
-            raise DataValidationError('The credit card number provided does not pass luhn validation')
+            raise DataValidationError("The credit card number provided does not pass luhn validation")
 
         if not is_valid_exp(self.exp_month, self.exp_year):
-            raise DataValidationError('The credit card expiration provided is not in the future')
+            raise DataValidationError("The credit card expiration provided is not in the future")
 
         if self.strict:
             if not is_valid_cvv(self.verification_value, cc_type):
-                raise DataValidationError('The credit card cvv is not valid')
+                raise DataValidationError("The credit card cvv is not valid")
 
         return True

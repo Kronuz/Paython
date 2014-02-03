@@ -1,8 +1,10 @@
+from __future__ import absolute_import, unicode_literals
+
 import time
 import logging
 
-from paython.gateways.core import Gateway
-from paython.exceptions import GatewayError, DataValidationError
+from ..gateways.core import Gateway
+from ..exceptions import GatewayError, DataValidationError
 
 
 logger = logging.getLogger(__name__)
@@ -13,7 +15,7 @@ try:
     from samurai.processor import Processor
     from samurai.transaction import Transaction
 except ImportError:
-    raise Exception('Samurai library not found, please install requirements.txt')
+    raise ImportError("Samurai library not found, please install requirements.txt")
 
 
 class Samurai(Gateway):
@@ -48,11 +50,11 @@ class Samurai(Gateway):
         config.processor_token = processor
 
         # passing fields to bubble up to Base Class
-        super(Samurai, self).__init__(set_method=self.set, translations=self.REQUEST_FIELDS, debug=debug)
+        super(Samurai, self).__init__(translations=self.REQUEST_FIELDS, debug=debug)
 
         if debug:
             self.debug = True
-        debug_string = " paython.gateways.samurai_ff.__init__() -- You're in debug mode"
+        debug_string = " %s.%s.__init__() -- You're in debug mode" % (__name__, 'Samurai')
         logger.debug(debug_string.center(80, '='))
 
     def set(self, key, value):
@@ -82,18 +84,18 @@ class Samurai(Gateway):
 
         # use the card + extra data- send it to samurai for storage and tokenization
         card._exp_yr_style = True
-        super(Samurai, self).use_credit_card(card)
+        self.use_credit_card(card)
         pm = PaymentMethod.create(
             card.number,
             card.verification_value,
             card.exp_month, card.exp_year, **billing_info)
 
-        debug_string = " paython.gateways.samurai_ff.charge_setup() -- response on setting pm"
+        debug_string = " %s.%s.charge_setup() -- response on setting pm" % (__name__, 'Samurai')
         logger.debug(debug_string.center(80, '='))
         logger.debug(dir(pm))
 
         if pm.errors:
-            raise DataValidationError('Invalid Card Data: %s' % pm.errors[pm.error_messages[0]['context']][0])
+            raise DataValidationError("Invalid Card Data: %s" % pm.errors[pm.error_messages[0]['context']][0])
 
         return pm.payment_method_token
 
@@ -113,7 +115,7 @@ class Samurai(Gateway):
     def settle(self, amount, trans_id):
         txn = Transaction.find(trans_id)
         if txn.errors:
-            raise GatewayError('Problem fetching transaction: %s' % txn.errors[txn.error_messages[0]['context']][0])
+            raise GatewayError("Problem fetching transaction: %s" % txn.errors[txn.error_messages[0]['context']][0])
         else:
             # start the timer
             start = time.time()
@@ -140,7 +142,7 @@ class Samurai(Gateway):
     def void(self, trans_id):
         txn = Transaction.find(trans_id)
         if txn.errors:
-            raise GatewayError('Problem fetching transaction: %s' % txn.errors[txn.error_messages[0]['context']][0])
+            raise GatewayError("Problem fetching transaction: %s" % txn.errors[txn.error_messages[0]['context']][0])
         else:
             # start the timer
             start = time.time()
@@ -154,7 +156,7 @@ class Samurai(Gateway):
     def credit(self, amount, trans_id):
         txn = Transaction.find(trans_id)
         if txn.errors:
-            raise GatewayError('Problem fetching transaction: %s' % txn.errors[txn.error_messages[0]['context']][0])
+            raise GatewayError("Problem fetching transaction: %s" % txn.errors[txn.error_messages[0]['context']][0])
         else:
             # start the timer
             start = time.time()
@@ -173,7 +175,7 @@ class Samurai(Gateway):
         response_text
         """
         resp = response.__dict__
-        rd = super(Samurai, self).standardize(resp, self.RESPONSE_KEYS, response_time, resp['success'])
+        rd = self.standardize(resp, self.RESPONSE_KEYS, response_time, resp['success'])
 
         # now try to update the other stuff
         if response.errors:

@@ -1,10 +1,12 @@
+from __future__ import absolute_import, unicode_literals
+
 import httplib
 import urllib
 import xml.dom.minidom
 
-from utils import parse_xml
-from paython.gateways.core import Gateway
-from paython.exceptions import RequestError, GatewayError, DataValidationError
+from .utils import parse_xml
+from ..gateways.core import Gateway
+from ..exceptions import RequestError, GatewayError, DataValidationError
 
 
 class XMLGateway(Gateway):
@@ -21,7 +23,7 @@ class XMLGateway(Gateway):
         self.parse_xml = parse_xml
         self.special_ssl = special_params
         self.headers = headers
-        super(XMLGateway, self).__init__(set_method=self.set, translations=translations, debug=debug)
+        super(XMLGateway, self).__init__(translations=translations, debug=debug)
 
     @property
     def envelope(self):
@@ -130,7 +132,7 @@ class XMLGateway(Gateway):
 
         # parse API call response
         if not resp.status == 200:
-            raise RequestError('Gateway returned %i status' % resp.status)
+            raise RequestError("Gateway returned %i status" % resp.status)
 
         # parse XML response and return as dict
         try:
@@ -139,7 +141,7 @@ class XMLGateway(Gateway):
             try:
                 resp_dict = self.parse_xml('<?xml version="1.0"?><response>%s</response>' % resp_data)
             except:
-                raise RequestError('Could not parse XML into JSON')
+                raise RequestError("Could not parse XML into JSON")
 
         return resp_dict
 
@@ -154,7 +156,7 @@ class GetGateway(Gateway):
 
     def __init__(self, translations, debug):
         """core GETgateway class"""
-        super(GetGateway, self).__init__(set_method=self.set, translations=translations, debug=debug)
+        super(GetGateway, self).__init__(translations=translations, debug=debug)
         self.debug = debug
 
     def set(self, key, value):
@@ -170,7 +172,7 @@ class GetGateway(Gateway):
         try:
             del self.REQUEST_DICT[key]
         except KeyError:
-            raise DataValidationError('The key being unset is non-existent in the request dictionary.')
+            raise DataValidationError("The key being unset is non-existent in the request dictionary.")
 
     def query_string(self):
         """
@@ -189,7 +191,7 @@ class GetGateway(Gateway):
 
             return request.read()
         except:
-            raise GatewayError('Error making request to gateway')
+            raise GatewayError("Error making request to gateway")
 
 
 class PostGateway(Gateway):
@@ -197,8 +199,10 @@ class PostGateway(Gateway):
     debug = False
 
     def __init__(self, translations, debug):
-        """core POSTgateway class"""
-        super(PostGateway, self).__init__(set_method=self.set, translations=translations, debug=debug)
+        """
+        core POST gateway class
+        """
+        super(PostGateway, self).__init__(translations=translations, debug=debug)
         self.debug = debug
 
     def set(self, key, value):
@@ -221,4 +225,4 @@ class PostGateway(Gateway):
             request = urllib.urlopen(uri, self.params())
             return request.read()
         except:
-            raise GatewayError('Error making request to gateway')
+            raise GatewayError("Error making request to gateway")

@@ -1,9 +1,11 @@
+from __future__ import absolute_import, unicode_literals
+
 import time
 import urlparse
 import logging
 
-from paython.exceptions import MissingDataError
-from paython.lib.api import PostGateway
+from ..exceptions import MissingDataError
+from ..lib.api import PostGateway
 
 logger = logging.getLogger(__name__)
 
@@ -104,11 +106,8 @@ class USAePay(PostGateway):
 
         self.test = test
         if test:
-            debug_string = self._get_debug_str_base() + ".__init__() -- You're in test mode (& debug, obviously) "
+            debug_string = " %s.%s.__init__() -- You're in test mode (& debug, obviously)" % (__name__, 'USAePay')
             logger.debug(debug_string.center(80, '='))
-
-    def _get_debug_str_base(self):
-        return ' ' + __name__ + '.' + self.__class__.__name__
 
     def charge_setup(self):
         """
@@ -117,7 +116,7 @@ class USAePay(PostGateway):
         #self.set('x_delim_data', 'TRUE')
         #self.set('x_delim_char', self.DELIMITER)
         #self.set('x_version', self.VERSION)
-        debug_string = self._get_debug_str_base() + '.charge_setup() Just set up for a charge '
+        debug_string = " %s.%s.charge_setup() Just set up for a charge " % (__name__, 'USAePay')
         logger.debug(debug_string.center(80, '='))
 
     def auth(self, amount, credit_card=None, billing_info=None, shipping_info=None):
@@ -133,10 +132,10 @@ class USAePay(PostGateway):
 
         # validating or building up request
         if not credit_card:
-            debug_string = self._get_debug_str_base() + '.auth()  -- No CreditCard object present. You passed in %s ' % (credit_card)
+            debug_string = "%s.%s.auth()  -- No CreditCard object present. You passed in %s" % (__name__, 'USAePay', credit_card)
             logger.debug(debug_string)
 
-            raise MissingDataError('You did not pass a CreditCard object into the auth method')
+            raise MissingDataError("You did not pass a CreditCard object into the auth method")
         else:
             self.use_credit_card(credit_card)
 
@@ -195,10 +194,10 @@ class USAePay(PostGateway):
 
         # validating or building up request
         if not credit_card:
-            debug_string = self._get_debug_str_base() + 'capture()  -- No CreditCard object present. You passed in ' + str(credit_card)
+            debug_string = "%s.%s.capture()  -- No CreditCard object present. You passed in %s" % (__name__, 'USAePay', credit_card)
             logger.debug(debug_string)
 
-            raise MissingDataError('You did not pass a CreditCard object into the auth method')
+            raise MissingDataError("You did not pass a CreditCard object into the auth method")
         else:
             self.use_credit_card(credit_card)
 
@@ -271,7 +270,7 @@ class USAePay(PostGateway):
         # decide which url to use (test|live)
         url = self.API_URI[self.test]
 
-        debug_string = self._get_debug_str_base() + '.request() -- Attempting request to: '
+        debug_string = " %s.%s.request() -- Attempting request to: " % (__name__, 'USAePay')
         logger.debug(debug_string.center(80, '='))
         logger.debug("\n %s with params: %s" % (url, self.params()))
 
@@ -281,7 +280,7 @@ class USAePay(PostGateway):
         end = time.time()  # done timing it
         response_time = '%0.2f' % (end - start)
 
-        debug_string = self._get_debug_str_base() + '.request()  -- Request completed in ' + response_time + 's '
+        debug_string = " %s.%s.request()  -- Request completed in %ss" % (__name__, 'USAePay', response_time)
         logger.debug(debug_string.center(80, '='))
 
         return response, response_time
@@ -290,7 +289,7 @@ class USAePay(PostGateway):
         """
         On Specific Gateway due differences in response from gateway
         """
-        debug_string = self._get_debug_str_base() + '.parse() -- Raw response: '
+        debug_string = " %s.%s.parse() -- Raw response: " % (__name__, 'USAePay')
         logger.debug(debug_string.center(80, '='))
         logger.debug('\n ' + str(response))
 
@@ -299,7 +298,7 @@ class USAePay(PostGateway):
         response = dict(new_response)
         approved = (response['UMresult'] == 'A')
 
-        debug_string = self._get_debug_str_base() + '.parse() -- Response as list: '
+        debug_string = " %s.%s.parse() -- Response as list: " % (__name__, 'USAePay')
         logger.debug(debug_string.center(80, '='))
         logger.debug('\n' + str(response))
 

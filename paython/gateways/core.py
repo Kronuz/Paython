@@ -1,9 +1,10 @@
 """core.py - Paython's core libraries"""
+from __future__ import absolute_import, unicode_literals
 
 import logging
 
-from paython.exceptions import DataValidationError, MissingTranslationError
-from paython.lib.utils import is_valid_email
+from ..exceptions import DataValidationError, MissingTranslationError
+from ..lib.utils import is_valid_email
 
 logger = logging.getLogger(__name__)
 
@@ -14,11 +15,13 @@ class Gateway(object):
     RESPONSE_FIELDS = {}
     debug = False
 
-    def __init__(self, set_method, translations, debug):
+    def __init__(self, translations, debug):
         """core gateway class"""
-        self.set = set_method
         self.REQUEST_FIELDS = translations
         self.debug = debug
+
+    def set(self, key, value):
+        raise NotImplementedError
 
     def use_credit_card(self, credit_card):
         """
@@ -72,7 +75,7 @@ class Gateway(object):
             if is_valid_email(email):
                 self.set(self.REQUEST_FIELDS['email'], email)
             else:
-                raise DataValidationError('The email submitted does not pass regex validation')
+                raise DataValidationError("The email submitted does not pass regex validation")
 
     def set_shipping_info(self, ship_first_name, ship_last_name, ship_address, ship_city, ship_state, ship_zipcode, ship_country=None, ship_to_co=None, ship_phone=None, ship_email=None):
         """
@@ -95,7 +98,7 @@ class Gateway(object):
             if eval(optional_var):  # see if it was passed into the method
                 if optional_var not in self.REQUEST_FIELDS:  # make sure we have a translation in the request fields dictionary
                     # & keep the string so we have a meaningful exception
-                    raise MissingTranslationError('Gateway doesn\'t support the \"%s\" field for shipping' % optional_var)
+                    raise MissingTranslationError("Gateway doesn't support the '%s' field for shipping" % optional_var)
 
                 # set it on the gateway level if we are able to get this far
                 self.set(self.REQUEST_FIELDS['ship_to_co'], ship_to_co)
@@ -111,10 +114,10 @@ class Gateway(object):
 
         if isinstance(spec_response, list):  # list settings
             i = 0
-            debug_string = 'paython.gateways.core.standardize() -- spec_response: '
+            debug_string = " %s.%s.standardize() -- spec_response: " % (__name__, 'Gateway')
             logger.debug(debug_string.center(80, '='))
             logger.debug('\n%s' % spec_response)
-            debug_string = 'paython.gateways.core.standardize() -- field_mapping: '
+            debug_string = " %s.%s.standardize() -- field_mapping: " % (__name__, 'Gateway')
             logger.debug(debug_string.center(80, '='))
             logger.debug('\n%s' % field_mapping)
 

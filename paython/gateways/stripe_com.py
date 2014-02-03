@@ -1,15 +1,19 @@
+from __future__ import absolute_import, unicode_literals
+
 import time
 import logging
+
+from ..lib.api import Gateway
+
+logger = logging.getLogger(__name__)
 
 try:
     import stripe
 except ImportError:
-    raise Exception('Stripe library not found, please install requirements.txt')
-
-logger = logging.getLogger(__name__)
+    raise ImportError("Stripe library not found, please install requirements.txt")
 
 
-class Stripe(object):
+class Stripe(Gateway):
     """TODO needs docstring"""
     VERSION = 'v1'
 
@@ -32,9 +36,10 @@ class Stripe(object):
         """
         self.stripe_api.api_key = username or api_key
 
-        if debug:
-            self.debug = True
-        debug_string = " paython.gateways.stripe.__init__() -- You're in debug mode"
+        # passing fields to bubble up to Base Class
+        super(Stripe, self).__init__(translations={}, debug=debug)
+
+        debug_string = " %s.%s.__init__() -- You're in debug mode" % (__name__, 'Stripe')
         logger.debug(debug_string.center(80, '='))
 
     def auth(self, amount, credit_card=None, billing_info=None, shipping_info=None):
@@ -42,17 +47,17 @@ class Stripe(object):
         Not implemented because stripe does not support authorizations:
         https://answers.stripe.com/questions/can-i-authorize-transactions-first-then-charge-the-customer-after-service-is-comp
         """
-        raise NotImplementedError('Stripe does not support auth or settlement. Try capture().')
+        raise NotImplementedError("Stripe does not support auth or settlement. Try capture().")
 
     def settle(self, amount, trans_id):
         """
         Not implemented because stripe does not support auth/settle:
         https://answers.stripe.com/questions/can-i-authorize-transactions-first-then-charge-the-customer-after-service-is-comp
         """
-        raise NotImplementedError('Stripe does not support auth or settlement. Try capture().')
+        raise NotImplementedError("Stripe does not support auth or settlement. Try capture().")
 
     def capture(self, amount, credit_card=None, billing_info=None, shipping_info=None):
-        debug_string = " paython.gateways.stripe.parse() -- Sending charge "
+        debug_string = " %s.%s.parse() -- Sending charge " % (__name__, 'Stripe')
         logger.debug(debug_string.center(80, '='))
 
         amount = int(float(amount) * 100)  # then change the amount to how stripe likes it
@@ -92,10 +97,10 @@ class Stripe(object):
         """
         Not implemented because Stripe does not support transaction voiding
         """
-        raise NotImplementedError('Stripe does not support transaction voiding. Try credit().')
+        raise NotImplementedError("Stripe does not support transaction voiding. Try credit().")
 
     def credit(self, amount, trans_id):
-        debug_string = " paython.gateways.stripe.parse() -- Sending credit "
+        debug_string = " %s.%s.parse() -- Sending credit " % (__name__, 'Stripe')
         logger.debug(debug_string.center(80, '='))
 
         amount = int(float(amount) * 100)
@@ -128,7 +133,7 @@ class Stripe(object):
         if hasattr(response, 'to_dict'):
             response = response.to_dict()
 
-        debug_string = " paython.gateways.stripe.parse() -- Dict response: "
+        debug_string = " %s.%s.parse() -- Dict response: " % (__name__, 'Stripe')
         logger.debug(debug_string.center(80, '='))
         logger.debug("\n %s" % response)
 
