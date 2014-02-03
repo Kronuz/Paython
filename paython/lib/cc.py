@@ -2,6 +2,7 @@ from paython.exceptions import DataValidationError
 
 from paython.lib.utils import get_card_type, get_card_exp, is_valid_exp, is_valid_cc, is_valid_cvv
 
+
 class CreditCard(object):
     """
     generic CreditCard object

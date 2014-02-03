@@ -3,9 +3,9 @@ import calendar
 import xml
 
 from datetime import datetime
-from suds.sax.text import Text as sudTypeText # for the 'parse_soap()' string type
 
 from paython.exceptions import GatewayError
+
 
 CARD_TYPES = {
     'visa': {'cc': re.compile(r'4\d{12}(\d{3})?$'), 'cvv': re.compile(r'^[\d+]{3}$')},
@@ -14,6 +14,7 @@ CARD_TYPES = {
     'discover': {'cc': re.compile(r'6011\d{12}'), 'cvv': re.compile(r'^[\d+]{3}$')},
     'diners': {'cc': re.compile(r'(30[0-5]\d{11}|(36|38)\d{12})$'), 'cvv': re.compile(r'^[\d+]{3}$')},
 }
+
 
 def parse_xml(element):
     """
@@ -39,7 +40,8 @@ def parse_xml(element):
         t = {}
 
         if e.nodeName == '#text':
-            if not e.nodeValue.strip(): continue
+            if not e.nodeValue.strip():
+                continue
 
         if e.attributes:
             t['attribute'] = {}
@@ -47,7 +49,7 @@ def parse_xml(element):
                 t['attribute'][attribute.nodeName] = attribute.childNodes[0].nodeValue
 
         if e.childNodes:
-            if t.has_key('attribute'):
+            if 'attribute' in t:
                 t['meta'] = parse_xml(e)
             else:
                 if len(e.childNodes) == 1:
@@ -61,7 +63,7 @@ def parse_xml(element):
         if not t:
             t = e.nodeValue
 
-        if root.has_key(e.nodeName):
+        if e.nodeName in root:
             if not isinstance(root[e.nodeName], list):
                 tmp = []
                 tmp.append(root[e.nodeName])
@@ -71,6 +73,7 @@ def parse_xml(element):
         root[e.nodeName] = t
 
     return root
+
 
 def is_valid_cc(cc):
     """
@@ -83,6 +86,7 @@ def is_valid_cc(cc):
     else:
         return not sum(num[::-2] + map(lambda d: sum(divmod(d * 2, 10)), num[-2::-2])) % 10
 
+
 def is_valid_exp(month, year):
     """
     Uses datetime to compare string of card expiration to the time right now
@@ -93,12 +97,14 @@ def is_valid_exp(month, year):
     exp_date_obj = datetime(year, month, calendar.monthrange(year, month)[1], 23, 59, 59, 59)
     return datetime.now() < exp_date_obj
 
+
 def is_valid_cvv(cc_cvv, cc_type):
     """
     Simple regex for card validator length & type.
     """
     cvv_re = CARD_TYPES[cc_type]['cvv']
     return cvv_re.match(cc_cvv)
+
 
 def get_card_type(cc):
     """
@@ -108,11 +114,13 @@ def get_card_type(cc):
         if v['cc'].match(cc):
             return k
 
+
 def get_card_exp(month, year):
     """
     Gets the expiration date by concatenating strings
     """
     return "{0}/{1}".format(month, year)
+
 
 def is_valid_email(email):
     """
@@ -120,6 +128,7 @@ def is_valid_email(email):
     """
     pat = '^([\w\!\#$\%\&\'\*\+\-\/\=\?\^\`{\|\}\~]+\.)*[\w\!\#$\%\&\'\*\+\-\/\=\?\^\`{\|\}\~]+@((((([a-z0-9]{1}[a-z0-9\-]{0,62}[a-z0-9]{1})|[a-z])\.)+[a-z]{2,6})|(\d{1,3}\.){3}\d{1,3}(\:\d{1,5})?)$'
     return re.search(pat, email, re.IGNORECASE)
+
 
 def transform_keys():
     raise NotImplemented

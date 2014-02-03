@@ -3,12 +3,14 @@ from django.contrib.localflavor.us.forms import USStateField, USZipCodeField, US
 
 from paython.lib.utils import get_card_type, is_valid_cc, is_valid_cvv, is_valid_exp
 
+
 class CustomerInformation(forms.Form):
     """
     Store the customer information, typically first name and last name.
     """
     first_name = forms.CharField(max_length=255)
     last_name = forms.CharField(max_length=255)
+
 
 class CreditCardForm(forms.Form):
     """
@@ -45,11 +47,13 @@ class CreditCardForm(forms.Form):
 
         return cleaned_data
 
+
 class ZipCodeForm(forms.Form):
     """
     Sometimes we just need the zipcode
     """
     zipcode = USZipCodeField()
+
 
 class CityStateZipCode(forms.Form):
     """
@@ -58,6 +62,7 @@ class CityStateZipCode(forms.Form):
     city = forms.CharField(max_length=255)
     state = USStateField(widget=USStateSelect)
     zipcode = USZipCodeField()
+
 
 class AddressForm(forms.Form):
     """

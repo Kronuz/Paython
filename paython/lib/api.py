@@ -6,6 +6,7 @@ from utils import parse_xml
 from paython.gateways.core import Gateway
 from paython.exceptions import RequestError, GatewayError, DataValidationError
 
+
 class XMLGateway(Gateway):
     def __init__(self, host, translations, debug=False, special_params={}, headers={}):
         """ initalize API call session
@@ -34,19 +35,19 @@ class XMLGateway(Gateway):
         return self._envelope
 
     def set(self, path, child=False, attribute=False):
-        """ Accepts a forward slash seperated path of XML elements to traverse and create if non existent.
+        """ Accepts a forward slash separated path of XML elements to traverse and create if non existent.
         Optional child and target node attributes can be set. If the `child` attribute is a tuple
         it will create X child nodes by reading each tuple as (name, text, 'attribute:value') where value
         and attributes are optional for each tuple.
 
-        - path: forward slash seperated API element path as string (example: "Order/Authentication/Username")
+        - path: forward slash separated API element path as string (example: "Order/Authentication/Username")
         - child: tuple of child node data or string to create a text node
         - attribute: sets the target XML attributes (string format: "Key:Value")
         """
         try:
             xml_path = path.split('/')
         except AttributeError:
-            return # because if it's None, then don't worry
+            return  # because if it's None, then don't worry
 
         envelope = self.envelope
 
@@ -54,7 +55,8 @@ class XMLGateway(Gateway):
         for element_name in xml_path:
             # get existing XML element by `element_name`
             element = envelope.getElementsByTagName(element_name)
-            if element: element = element[0]
+            if element:
+                element = element[0]
 
             # create element if non existing or target element
             if not element or element_name == xml_path[-1:][0]:
@@ -141,8 +143,10 @@ class XMLGateway(Gateway):
 
         return resp_dict
 
+
 class SOAPGateway(XMLGateway):
     pass
+
 
 class GetGateway(Gateway):
     REQUEST_DICT = {}
@@ -186,6 +190,7 @@ class GetGateway(Gateway):
             return request.read()
         except:
             raise GatewayError('Error making request to gateway')
+
 
 class PostGateway(Gateway):
     REQUEST_DICT = {}

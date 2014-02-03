@@ -6,6 +6,7 @@ from paython.lib.api import GetGateway
 
 logger = logging.getLogger(__name__)
 
+
 class AuthorizeNet(GetGateway):
     """TODO needs docstring"""
     VERSION = '3.1'
@@ -14,14 +15,14 @@ class AuthorizeNet(GetGateway):
 
     # This is how we determine whether or not we allow 'test' as an init param
     API_URI = {
-        'live' : 'https://secure.authorize.net/gateway/transact.dll',
-        'test' : 'https://test.authorize.net/gateway/transact.dll'
+        'live': 'https://secure.authorize.net/gateway/transact.dll',
+        'test': 'https://test.authorize.net/gateway/transact.dll'
     }
 
     # This is how we translate the common Paython fields to Gateway specific fields
     REQUEST_FIELDS = {
         #contact
-        'full_name' : None,
+        'full_name': None,
         'first_name': 'x_first_name',
         'last_name': 'x_last_name',
         'email': 'x_email',
@@ -58,8 +59,8 @@ class AuthorizeNet(GetGateway):
         'trans_type': 'x_type',
         'trans_id': 'x_trans_id',
         'alt_trans_id': None,
-        'split_tender_id':'x_split_tender_id',
-        'is_partial':'x_allow_partial_auth',
+        'split_tender_id': 'x_split_tender_id',
+        'is_partial': 'x_allow_partial_auth',
     }
 
     # Response Code: 1 = Approved, 2 = Declined, 3 = Error, 4 = Held for Review
@@ -68,55 +69,55 @@ class AuthorizeNet(GetGateway):
     # AVS Responses (cont'd): Y = Address (Street) and five digit ZIP match, Z = Five digit ZIP matches, Address (Street) does not
     # response index keys to map the value to its proper dictionary key
     RESPONSE_KEYS = {
-        '0':'response_code',
-        '1':'response_sub_code',
-        '2':'response_reason_code',
-        '3':'response_text',
-        '4':'auth_code',
-        '5':'avs_response',
-        '6':'trans_id',
-        '7':'invoice_number',
+        '0': 'response_code',
+        '1': 'response_sub_code',
+        '2': 'response_reason_code',
+        '3': 'response_text',
+        '4': 'auth_code',
+        '5': 'avs_response',
+        '6': 'trans_id',
+        '7': 'invoice_number',
         '8': 'description',
-        '9':'amount',
-        '10':'method',
-        '11':'trans_type',
-        '12':'alt_trans_id',
-        '13':'first_name',
-        '14':'last_name',
-        '15':'company',
-        '16':'address',
-        '17':'city',
-        '18':'state',
-        '19':'zip_code',
-        '20':'country',
-        '21':'phone',
-        '22':'fax',
-        '23':'email_address',
-        '24':'ship_to_first_name',
-        '25':'ship_to_last_name',
-        '26':'ship_to_company',
-        '27':'ship_to_address',
-        '28':'ship_to_city',
-        '29':'ship_to_state',
-        '30':'ship_to_zip_code',
-        '31':'ship_to_country',
-        '32':'tax',
-        '33':'duty',
-        '34':'freight',
-        '35':'tax_exempt',
-        '36':'purchase_order_number',
-        '37':'MD5_hash',
-        '38':'cvv_response',
-        '39':'cavv_response',
-        '40':'account_number',
-        '41':'card_type',
-        '42':'split_tender_id',
-        '43':'amount',
-        '44':'balance_on_card',
-        '53':'split_tender_id',
-        '54':'requested_amount',
-        '55':'balance_on_card',
-        #'n/a':'alt_trans_id2', <-- third way of id'ing a transaction
+        '9': 'amount',
+        '10': 'method',
+        '11': 'trans_type',
+        '12': 'alt_trans_id',
+        '13': 'first_name',
+        '14': 'last_name',
+        '15': 'company',
+        '16': 'address',
+        '17': 'city',
+        '18': 'state',
+        '19': 'zip_code',
+        '20': 'country',
+        '21': 'phone',
+        '22': 'fax',
+        '23': 'email_address',
+        '24': 'ship_to_first_name',
+        '25': 'ship_to_last_name',
+        '26': 'ship_to_company',
+        '27': 'ship_to_address',
+        '28': 'ship_to_city',
+        '29': 'ship_to_state',
+        '30': 'ship_to_zip_code',
+        '31': 'ship_to_country',
+        '32': 'tax',
+        '33': 'duty',
+        '34': 'freight',
+        '35': 'tax_exempt',
+        '36': 'purchase_order_number',
+        '37': 'MD5_hash',
+        '38': 'cvv_response',
+        '39': 'cavv_response',
+        '40': 'account_number',
+        '41': 'card_type',
+        '42': 'split_tender_id',
+        '43': 'amount',
+        '44': 'balance_on_card',
+        '53': 'split_tender_id',
+        '54': 'requested_amount',
+        '55': 'balance_on_card',
+        #'n/a': 'alt_trans_id2', <-- third way of id'ing a transaction
     }
 
     debug = False
@@ -178,7 +179,7 @@ class AuthorizeNet(GetGateway):
         Sends charge for authorization based on amount
         """
         #set up transaction
-        self.charge_setup() # considering turning this into a decorator?
+        self.charge_setup()  # considering turning this into a decorator?
 
         #setting transaction data
         super(AuthorizeNet, self).set(self.REQUEST_FIELDS['amount'], amount)
@@ -215,14 +216,14 @@ class AuthorizeNet(GetGateway):
         Sends prior authorization to be settled based on amount & trans_id PRIOR_AUTH_CAPTURE
         """
         #set up transaction
-        self.charge_setup() # considering turning this into a decorator?
+        self.charge_setup()  # considering turning this into a decorator?
 
         #setting transaction data
         super(AuthorizeNet, self).set(self.REQUEST_FIELDS['trans_type'], 'PRIOR_AUTH_CAPTURE')
         super(AuthorizeNet, self).set(self.REQUEST_FIELDS['amount'], amount)
         super(AuthorizeNet, self).set(self.REQUEST_FIELDS['trans_id'], trans_id)
 
-        if split_id: # settles the entire split
+        if split_id:  # settles the entire split
             super(AuthorizeNet, self).set(self.REQUEST_FIELDS['split_tender_id'], split_id)
             super(AuthorizeNet, self).unset(self.REQUEST_FIELDS['trans_id'])
 
@@ -235,7 +236,7 @@ class AuthorizeNet(GetGateway):
         Sends transaction for capture (same day settlement) based on amount.
         """
         #set up transaction
-        self.charge_setup() # considering turning this into a decorator?
+        self.charge_setup()  # considering turning this into a decorator?
 
         #setting transaction data
         super(AuthorizeNet, self).set(self.REQUEST_FIELDS['amount'], amount)
@@ -265,13 +266,13 @@ class AuthorizeNet(GetGateway):
         Sends a transaction to be voided (in full)
         """
         #set up transaction
-        self.charge_setup() # considering turning this into a decorator?
+        self.charge_setup()  # considering turning this into a decorator?
 
         #setting transaction data
         super(AuthorizeNet, self).set(self.REQUEST_FIELDS['trans_type'], 'VOID')
         super(AuthorizeNet, self).set(self.REQUEST_FIELDS['trans_id'], trans_id)
 
-        if split_id: # voids an entire split (alternatively, a trans_id just kills that particular txn)
+        if split_id:  # voids an entire split (alternatively, a trans_id just kills that particular txn)
             super(AuthorizeNet, self).set(self.REQUEST_FIELDS['split_tender_id'], split_id)
             super(AuthorizeNet, self).unset(self.REQUEST_FIELDS['trans_id'])
 
@@ -284,17 +285,17 @@ class AuthorizeNet(GetGateway):
         Sends a transaction to be refunded (partially or fully)
         """
         #set up transaction
-        self.charge_setup() # considering turning this into a decorator?
+        self.charge_setup()  # considering turning this into a decorator?
 
         #setting transaction data
         super(AuthorizeNet, self).set(self.REQUEST_FIELDS['trans_type'], 'CREDIT')
         super(AuthorizeNet, self).set(self.REQUEST_FIELDS['trans_id'], trans_id)
         super(AuthorizeNet, self).set(self.REQUEST_FIELDS['number'], credit_card.number)
 
-        if amount: #check to see if we should send an amount
+        if amount:  # check to see if we should send an amount
             super(AuthorizeNet, self).set(self.REQUEST_FIELDS['amount'], amount)
 
-        if split_id: # voids an entire split (alternatively, a trans_id just kills that particular txn)
+        if split_id:  # voids an entire split (alternatively, a trans_id just kills that particular txn)
             super(AuthorizeNet, self).set(self.REQUEST_FIELDS['split_tender_id'], split_id)
             super(AuthorizeNet, self).unset(self.REQUEST_FIELDS['trans_id'])
 
@@ -310,7 +311,7 @@ class AuthorizeNet(GetGateway):
         if self.test == self.LIVE_TEST or not self.test:
             url = self.API_URI['live']
         else:
-            url = self.API_URI['test'] # here just in case we want to granularly change endpoint
+            url = self.API_URI['test']  # here just in case we want to granularly change endpoint
 
         debug_string = " paython.gateways.authorize_net.request() -- Attempting request to: "
         logger.debug(debug_string.center(80, '='))
@@ -319,9 +320,9 @@ class AuthorizeNet(GetGateway):
         logger.debug('as dict: %s' % self.REQUEST_DICT)
 
         # make the request
-        start = time.time() # timing it
+        start = time.time()  # timing it
         response = super(AuthorizeNet, self).make_request(url)
-        end = time.time() # done timing it
+        end = time.time()  # done timing it
         response_time = '%0.2f' % (end - start)
 
         debug_string = " paython.gateways.authorize_net.request()  -- Request completed in %ss " % response_time

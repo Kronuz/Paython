@@ -7,6 +7,7 @@ from paython.lib.utils import is_valid_email
 
 logger = logging.getLogger(__name__)
 
+
 class Gateway(object):
     """base gateway class"""
     REQUEST_FIELDS = {}
@@ -23,7 +24,7 @@ class Gateway(object):
         """
         Set up credit card info use (if necessary for transaction)
         """
-        if hasattr(credit_card, '_exp_yr_style'): # here for gateways that like 2 digit expiration years
+        if hasattr(credit_card, '_exp_yr_style'):  # here for gateways that like 2 digit expiration years
             credit_card.exp_year = credit_card.exp_year[-2:]
 
         for key, value in credit_card.__dict__.items():
@@ -31,7 +32,7 @@ class Gateway(object):
                 try:
                     self.set(self.REQUEST_FIELDS[key], value)
                 except KeyError:
-                    pass # it is okay to fail (on exp_month & exp_year)
+                    pass  # it is okay to fail (on exp_month & exp_year)
 
     def set_billing_info(self, address=None, address2=None, city=None, state=None, zipcode=None, country=None, phone=None, email=None, ip=None, first_name=None, last_name=None):
         """
@@ -86,13 +87,13 @@ class Gateway(object):
         self.set(self.REQUEST_FIELDS['ship_zipcode'], ship_zipcode)
 
         # now optional ones
-        optionals = ['ship_to_co', 'ship_phone', 'ship_email', 'ship_country'] # using list of strings for reasons spec'd below
+        optionals = ['ship_to_co', 'ship_phone', 'ship_email', 'ship_country']  # using list of strings for reasons spec'd below
 
         #in line comments on this one
         for optional_var in optionals:
-            exec '%s = %s' % (optional_var, optional_var) # re-assign each option param to itself
-            if eval(optional_var): # see if it was passed into the method
-                if optional_var not in self.REQUEST_FIELDS: # make sure we have a translation in the request fields dictionary
+            exec '%s = %s' % (optional_var, optional_var)  # re-assign each option param to itself
+            if eval(optional_var):  # see if it was passed into the method
+                if optional_var not in self.REQUEST_FIELDS:  # make sure we have a translation in the request fields dictionary
                     # & keep the string so we have a meaningful exception
                     raise MissingTranslationError('Gateway doesn\'t support the \"%s\" field for shipping' % optional_var)
 
@@ -108,7 +109,7 @@ class Gateway(object):
         self.RESPONSE_FIELDS['response_time'] = response_time
         self.RESPONSE_FIELDS['approved'] = approved
 
-        if isinstance(spec_response, list): # list settings
+        if isinstance(spec_response, list):  # list settings
             i = 0
             debug_string = 'paython.gateways.core.standardize() -- spec_response: '
             logger.debug(debug_string.center(80, '='))
@@ -118,16 +119,16 @@ class Gateway(object):
             logger.debug('\n%s' % field_mapping)
 
             for item in spec_response:
-                iteration_key = str(i) #stringifying because the field_mapping keys are strings
+                iteration_key = str(i)  # stringifying because the field_mapping keys are strings
                 if iteration_key in field_mapping:
                     self.RESPONSE_FIELDS[field_mapping[iteration_key]] = item
                 i += 1
-        else: # dict settings
+        else:  # dict settings
             for key, value in spec_response.items():
                 try:
                     self.RESPONSE_FIELDS[field_mapping[key]] = value
                 except KeyError:
-                    pass #its okay to fail if we dont have a translation
+                    pass  # its okay to fail if we dont have a translation
 
         #send it back!
         return self.RESPONSE_FIELDS

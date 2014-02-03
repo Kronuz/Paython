@@ -7,6 +7,7 @@ from paython.lib.api import PostGateway
 
 logger = logging.getLogger(__name__)
 
+
 class InnovativeGW(PostGateway):
     """TODO needs docstring"""
     VERSION = 'WebCharge_v5.06'
@@ -68,15 +69,15 @@ class InnovativeGW(PostGateway):
     # response index keys to map the value to its proper dictionary key
     # it goes like this: 'gateway_specific_parameter' ==> 'paython_key'
     RESPONSE_KEYS = {
-        'error':'response_text',
-        'messageid':'auth_code',
-        'avs':'avs_response',
-        'anatransid':'trans_id',
-        'fulltotal':'amount',
-        'trantype':'trans_type',
-        'approval':'alt_trans_id', # aka "reference" in intuit land
-        'ordernumber':'alt_trans_id2',
-        'fulltotal':'amount',
+        'error': 'response_text',
+        'messageid': 'auth_code',
+        'avs': 'avs_response',
+        'anatransid': 'trans_id',
+        'fulltotal': 'amount',
+        'trantype': 'trans_type',
+        'approval': 'alt_trans_id',  # aka "reference" in intuit land
+        'ordernumber': 'alt_trans_id2',
+        'fulltotal': 'amount',
         #'38':'cvv_response', <-- way of finding out if verification_value is invalid
         #'2':'response_reason_code', <-- mostly for reporting
         #'0':'response_code', <-- mostly for reporting
@@ -115,7 +116,7 @@ class InnovativeGW(PostGateway):
         Sends charge for authorization based on amount
         """
         #set up transaction
-        self.charge_setup() # considering turning this into a decorator?
+        self.charge_setup()  # considering turning this into a decorator?
 
         #setting transaction data
         super(InnovativeGW, self).set(self.REQUEST_FIELDS['amount'], amount)
@@ -144,14 +145,14 @@ class InnovativeGW(PostGateway):
         Sends prior authorization to be settled based on amount & trans_id PRIOR_AUTH_CAPTURE
         """
         #set up transaction
-        self.charge_setup() # considering turning this into a decorator?
+        self.charge_setup()  # considering turning this into a decorator?
 
         #setting transaction data
         super(InnovativeGW, self).set(self.REQUEST_FIELDS['trans_type'], 'postauth')
         super(InnovativeGW, self).set(self.REQUEST_FIELDS['amount'], amount)
         super(InnovativeGW, self).set(self.REQUEST_FIELDS['trans_id'], trans_id)
         super(InnovativeGW, self).set(self.REQUEST_FIELDS['alt_trans_id'], ref)
-        super(InnovativeGW, self).set('authamount', amount) #hardcoded because of uniqueness to gateway
+        super(InnovativeGW, self).set('authamount', amount)  # hardcoded because of uniqueness to gateway
 
         # send transaction to gateway!
         response, response_time = self.request()
@@ -162,7 +163,7 @@ class InnovativeGW(PostGateway):
         Sends transaction for capture (same day settlement) based on amount.
         """
         #set up transaction
-        self.charge_setup() # considering turning this into a decorator?
+        self.charge_setup()  # considering turning this into a decorator?
 
         #setting transaction data
         super(InnovativeGW, self).set(self.REQUEST_FIELDS['amount'], amount)
@@ -191,13 +192,13 @@ class InnovativeGW(PostGateway):
         Sends a transaction to be voided (in full)
         """
         #set up transaction
-        self.charge_setup() # considering turning this into a decorator?
+        self.charge_setup()  # considering turning this into a decorator?
 
         #setting transaction data
         super(InnovativeGW, self).set(self.REQUEST_FIELDS['trans_type'], 'void')
         super(InnovativeGW, self).set(self.REQUEST_FIELDS['trans_id'], trans_id)
         super(InnovativeGW, self).set(self.REQUEST_FIELDS['alt_trans_id'], ref)
-        super(InnovativeGW, self).set('ordernumber', ordernumber) #hardcoded because of uniqueness to gateway
+        super(InnovativeGW, self).set('ordernumber', ordernumber)  # hardcoded because of uniqueness to gateway
 
         # send transaction to gateway!
         response, response_time = self.request()
@@ -208,15 +209,15 @@ class InnovativeGW(PostGateway):
         Sends a transaction to be refunded (partially or fully)
         """
         #set up transaction
-        self.charge_setup() # considering turning this into a decorator?
+        self.charge_setup()  # considering turning this into a decorator?
 
         #setting transaction data
         super(InnovativeGW, self).set(self.REQUEST_FIELDS['trans_type'], 'credit')
         super(InnovativeGW, self).set(self.REQUEST_FIELDS['trans_id'], trans_id)
         super(InnovativeGW, self).set(self.REQUEST_FIELDS['alt_trans_id'], ref)
-        super(InnovativeGW, self).set('ordernumber', ordernumber) #hardcoded because of uniqueness to gateway
+        super(InnovativeGW, self).set('ordernumber', ordernumber)  # hardcoded because of uniqueness to gateway
 
-        if amount: #check to see if we should send an amount
+        if amount:  # check to see if we should send an amount
             super(InnovativeGW, self).set(self.REQUEST_FIELDS['amount'], amount)
 
         # send transaction to gateway!
@@ -236,9 +237,9 @@ class InnovativeGW(PostGateway):
                      (url, super(InnovativeGW, self).params()))
 
         # make the request
-        start = time.time() # timing it
+        start = time.time()  # timing it
         response = super(InnovativeGW, self).make_request(url)
-        end = time.time() # done timing it
+        end = time.time()  # done timing it
         response_time = '%0.2f' % (end - start)
 
         debug_string = " paython.gateways.innovative_gw.request()  -- Request completed in %ss " % response_time
@@ -260,7 +261,7 @@ class InnovativeGW(PostGateway):
             approved = True
         else:
             approved = False
-            response['approval'] = 'decline' # there because we have a translation key called "approval" - open to ideas here...
+            response['approval'] = 'decline'  # there because we have a translation key called "approval" - open to ideas here...
 
         debug_string = " paython.gateways.innovative_gw.parse() -- Response as dict: "
         logger.debug(debug_string.center(80, '='))

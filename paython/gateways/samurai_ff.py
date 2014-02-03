@@ -2,7 +2,8 @@ import time
 import logging
 
 from paython.gateways.core import Gateway
-from paython.exceptions import *
+from paython.exceptions import GatewayError, DataValidationError
+
 
 logger = logging.getLogger(__name__)
 
@@ -14,24 +15,25 @@ try:
 except ImportError:
     raise Exception('Samurai library not found, please install requirements.txt')
 
+
 class Samurai(Gateway):
     """TODO needs docstring"""
     VERSION = 'v1'
 
     REQUEST_FIELDS = {
-        'first_name':'first_name',
-        'last_name':'last_name',
-        'address':'address_1',
-        'city':'city',
-        'state':'state',
-        'zipcode':'zip'
+        'first_name': 'first_name',
+        'last_name': 'last_name',
+        'address': 'address_1',
+        'city': 'city',
+        'state': 'state',
+        'zipcode': 'zip'
     }
 
     RESPONSE_KEYS = {
-        'transaction_token':'trans_id',
-        'transaction_type':'trans_type',
-        'reference_id':'alt_trans_id',
-        'amount':'amount'
+        'transaction_token': 'trans_id',
+        'transaction_type': 'trans_type',
+        'reference_id': 'alt_trans_id',
+        'amount': 'amount'
     }
 
     def __init__(self, merchant_key=None, password=None, processor=None, debug=False):
@@ -82,9 +84,9 @@ class Samurai(Gateway):
         card._exp_yr_style = True
         super(Samurai, self).use_credit_card(card)
         pm = PaymentMethod.create(
-                    card.number,
-                    card.verification_value,
-                    card.exp_month, card.exp_year, **billing_info)
+            card.number,
+            card.verification_value,
+            card.exp_month, card.exp_year, **billing_info)
 
         debug_string = " paython.gateways.samurai_ff.charge_setup() -- response on setting pm"
         logger.debug(debug_string.center(80, '='))
@@ -103,8 +105,8 @@ class Samurai(Gateway):
         # send it over for processing
         response = Processor.authorize(card_token, amount)
         # measure time
-        end = time.time() # done timing it
-        response_time = '%0.2f' % (end-start)
+        end = time.time()  # done timing it
+        response_time = '%0.2f' % (end - start)
         # return parsed response
         return self.parse(response, response_time)
 
@@ -117,11 +119,11 @@ class Samurai(Gateway):
             start = time.time()
             response = txn.capture(amount)
             # measure time
-            end = time.time() # done timing it
-            response_time = '%0.2f' % (end-start)
+            end = time.time()  # done timing it
+            response_time = '%0.2f' % (end - start)
             # return parsed response
             return self.parse(response, response_time)
-            
+
     def capture(self, amount, credit_card=None, billing_info=None, shipping_info=None):
         # set up the card for charging, obviously
         card_token = self.charge_setup(credit_card, billing_info)
@@ -130,8 +132,8 @@ class Samurai(Gateway):
         # send it over for processing
         response = Processor.purchase(card_token, amount)
         # measure time
-        end = time.time() # done timing it
-        response_time = '%0.2f' % (end-start)
+        end = time.time()  # done timing it
+        response_time = '%0.2f' % (end - start)
         # return parsed response
         return self.parse(response, response_time)
 
@@ -144,8 +146,8 @@ class Samurai(Gateway):
             start = time.time()
             response = txn.void()
             # measure time
-            end = time.time() # done timing it
-            response_time = '%0.2f' % (end-start)
+            end = time.time()  # done timing it
+            response_time = '%0.2f' % (end - start)
             # return parsed response
             return self.parse(response, response_time)
 
@@ -158,8 +160,8 @@ class Samurai(Gateway):
             start = time.time()
             response = txn.reverse(amount)
             # measure time
-            end = time.time() # done timing it
-            response_time = '%0.2f' % (end-start)
+            end = time.time()  # done timing it
+            response_time = '%0.2f' % (end - start)
             # return parsed response
             return self.parse(response, response_time)
 
@@ -172,7 +174,7 @@ class Samurai(Gateway):
         """
         resp = response.__dict__
         rd = super(Samurai, self).standardize(resp, self.RESPONSE_KEYS, response_time, resp['success'])
-        
+
         # now try to update the other stuff
         if response.errors:
             rd['response_text'] = resp['errors'][resp['error_messages'][0]['context']][0]

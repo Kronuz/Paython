@@ -7,6 +7,7 @@ from paython.lib.api import PostGateway
 
 logger = logging.getLogger(__name__)
 
+
 class USAePay(PostGateway):
     """ usaepay.com Payment Gatway Interface
 
@@ -27,7 +28,7 @@ class USAePay(PostGateway):
     # This is how we translate the common Paython fields to Gateway specific fields
     REQUEST_FIELDS = {
         #contact
-        'full_name' : 'UMname',
+        'full_name': 'UMname',
         'first_name': None,
         'last_name': None,
         'email': 'UMcustemail',
@@ -71,19 +72,19 @@ class USAePay(PostGateway):
     # AVS Responses (cont'd): Y = Address (Street) and five digit ZIP match, Z = Five digit ZIP matches, Address (Street) does not
     # response index keys to map the value to its proper dictionary key
     RESPONSE_KEYS = {
-        'UMresult' :         'response_code',
-        'UMerror' :          'response_text',
-        'UMauthCode' :       'auth_code',
-        'UMavsResult' :      'avs_response',
-        'UMrefNum' :         'trans_id',
-        'UMauthAmount' :     'amount',
-        'UMcvv2ResultCode' : 'cvv_response',
-        'UMavsResult' :      'avs_response_text',
-        #'n/a' :              'response_reason_code',
-        #'n/a' :              'trans_type',
-        #'n/a' :              'alt_trans_id',
-        #'n/a' :              'response_reason',
-        #'n/a' :              'fraud_level',
+        'UMresult': 'response_code',
+        'UMerror': 'response_text',
+        'UMauthCode': 'auth_code',
+        'UMavsResult': 'avs_response',
+        'UMrefNum': 'trans_id',
+        'UMauthAmount': 'amount',
+        'UMcvv2ResultCode': 'cvv_response',
+        'UMavsResult': 'avs_response_text',
+        #'n/a': 'response_reason_code',
+        #'n/a': 'trans_type',
+        #'n/a': 'alt_trans_id',
+        #'n/a': 'response_reason',
+        #'n/a': 'fraud_level',
     }
 
     def __init__(self, username='test', password='testpassword', debug=False, test=False):
@@ -97,9 +98,9 @@ class USAePay(PostGateway):
         #self.set('UM', password)
 
         self.API_URI = {
-                        False : 'https://www.usaepay.com/gate',
-                        True :  'https://sandbox.usaepay.com/gate'
-                       }
+            False: 'https://www.usaepay.com/gate',
+            True: 'https://sandbox.usaepay.com/gate'
+        }
 
         self.test = test
         if test:
@@ -154,7 +155,7 @@ class USAePay(PostGateway):
         Sends prior authorization to be settled based on amount & trans_id
         """
         #set up transaction
-        self.charge_setup() 
+        self.charge_setup()
 
         #setting transaction data
         self.set(self.REQUEST_FIELDS['trans_type'], 'cc:capture')
@@ -170,7 +171,7 @@ class USAePay(PostGateway):
         Adjust an existing (unsettled) sale.  Adjust the amount up or down, etc.
         """
         #set up transaction
-        self.charge_setup() 
+        self.charge_setup()
 
         #setting transaction data
         self.set(self.REQUEST_FIELDS['trans_type'], 'cc:adjust')
@@ -238,7 +239,7 @@ class USAePay(PostGateway):
         self.set(self.REQUEST_FIELDS['trans_id'], trans_id)
         self.set(self.REQUEST_FIELDS['number'], credit_card.number)
 
-        if amount: #check to see if we should send an amount
+        if amount:  # check to see if we should send an amount
             self.set(self.REQUEST_FIELDS['amount'], amount)
 
         # send transaction to gateway
@@ -256,7 +257,7 @@ class USAePay(PostGateway):
         self.set(self.REQUEST_FIELDS['trans_type'], 'cc:credit')
         self.set(self.REQUEST_FIELDS['number'], credit_card.number)
 
-        if amount: #check to see if we should send an amount
+        if amount:  # check to see if we should send an amount
             self.set(self.REQUEST_FIELDS['amount'], amount)
 
         # send transaction to gateway
@@ -275,10 +276,10 @@ class USAePay(PostGateway):
         logger.debug("\n %s with params: %s" % (url, self.params()))
 
         # make the request
-        start = time.time() # timing it
+        start = time.time()  # timing it
         response = self.make_request(url)
-        end = time.time() # done timing it
-        response_time = '%0.2f' % (end-start)
+        end = time.time()  # done timing it
+        response_time = '%0.2f' % (end - start)
 
         debug_string = self._get_debug_str_base() + '.request()  -- Request completed in ' + response_time + 's '
         logger.debug(debug_string.center(80, '='))
